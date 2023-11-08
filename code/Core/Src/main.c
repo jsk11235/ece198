@@ -112,7 +112,7 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
 	  char a = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_3);
-	  char message[70] = ""; //Data to send
+	  char message[150] = ""; //Data to send
 //	  adxl_write(0x2d, 0x08);
 	  uint8_t data_rec[6];
 	  int16_t x = adxl_readx(data_rec);
