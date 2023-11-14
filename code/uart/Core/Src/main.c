@@ -99,6 +99,8 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, 0);
+
 
   /* USER CODE END 2 */
 
@@ -109,29 +111,14 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  uint8_t send_buff[200] = "";
-	  HAL_UART_Receive(&huart2, send_buff, sizeof(send_buff), 5000);
-
-	  uint32_t string_size = compute_string_size(send_buff);
-
-//	  send_buff[string_size] = '\r';
-//	  send_buff[string_size+1] = '\n';
-
-
-	  uint8_t message[200] = "";
-
-	  sprintf(message,"string size is %lu\n",string_size);
-	  HAL_UART_Transmit(&huart2, (uint8_t*) message, sizeof(message), 10);
-
-	  if (*send_buff!='\0'){
-		  HAL_UART_Transmit(&huart2, (uint8_t*) send_buff, sizeof(send_buff), 10);
-		  lora_send(send_buff, string_size, &huart1);
-//		  HAL_UART_Transmit(&huart1, (uint8_t*) send_buff, string_size+2, 10);
-
-		  uint8_t response_buff[200] = "";
-		  HAL_UART_Receive(&huart1, (uint8_t*) response_buff, sizeof(response_buff), 200);
-		  HAL_UART_Transmit(&huart2, (uint8_t*) response_buff, sizeof(response_buff), 10);
+	  uint8_t response_buff[200] = "";
+	  HAL_UART_Receive(&huart1, (uint8_t*) response_buff, sizeof(response_buff), 200);
+	  if (response_buff[0]!='\0'){
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, 1);
+		  while (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_7)){}
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, 0);
 	  }
+	  HAL_UART_Transmit(&huart2, (uint8_t*) response_buff, sizeof(response_buff), 10);
   }
   /* USER CODE END 3 */
 }
@@ -250,11 +237,30 @@ static void MX_USART2_UART_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
 /* USER CODE BEGIN MX_GPIO_Init_1 */
 /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : PC7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PB6 */
+  GPIO_InitStruct.Pin = GPIO_PIN_6;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */

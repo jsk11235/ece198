@@ -1,13 +1,6 @@
-/*
- * lora_send.h
- *
- *  Created on: Nov 12, 2023
- *      Author: Jacob Kirmayer
- */
+#define AT_SEND_SIZE 8
+#define ADR_ID_SIZE 6
+#define TERM_SIZE 2
+#define TOT_SIZE AT_SEND_SIZE+ADR_ID_SIZE+TERM_SIZE
 
-#ifndef SRC_LORA_SEND_H_
-#define SRC_LORA_SEND_H_
-
-
-
-#endif /* SRC_LORA_SEND_H_ */
+void lora_send(uint8_t * data_buff, size_t message_size, UART_HandleTypeDef * huart);

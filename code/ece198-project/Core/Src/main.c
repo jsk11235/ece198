@@ -62,7 +62,14 @@ static void MX_USART1_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+uint32_t compute_string_size(uint8_t* start){
+	uint32_t res = 0;
+	while (*start!='\0'&&*start!='\r'&&*start!='\n'){
+		start++;
+		res++;
+	}
+	return res;
+}
 /* USER CODE END 0 */
 
 /**
@@ -115,17 +122,23 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
 	  char a = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_3);
-	  char message[150] = ""; //Data to send
+	  uint8_t message[150] = ""; //Data to send
 //	  adxl_write(0x2d, 0x08);
 	  uint8_t data_rec[6];
 	  int16_t x = adxl_readx(data_rec);
 	  int16_t y = adxl_ready(data_rec);
 	  int16_t z = adxl_readz(data_rec);
 
+	  uint64_t jerksq = (last_x-x)*(last_x-x)+(last_y-y)*(last_y-y)+(last_z-z)*(last_z-z);
 
-	  sprintf(message,"x:%f y:%f z:%f jerk:%d values from accelerometer\r\n",x/147.0, y/147.0, z/147.0, (last_x-x)*(last_x-x)+(last_y-y)*(last_y-y)+(last_z-z)*(last_z-z));
+	  sprintf(message,"x:%f y:%f z:%f jerk:%d values from accelerometer\r\n",x/147.0, y/147.0, z/147.0, jerksq);
 
-	  HAL_UART_Transmit(&huart2, (char*) message,sizeof(message),1000);// Sending in normal mode
+	  if (jerksq > JERKSQ_THRESHOLD){
+		  lora_send("jerk passed threshold", compute_string_size("jerk passed threshold"), &huart1);
+		  HAL_UART_Transmit(&huart2, (char*) "jerk passed",sizeof("jerk passed"),1000);// Sending in normal mode
+	  }
+
+//	  HAL_UART_Transmit(&huart2, (char*) message,sizeof(message),1000);// Sending in normal mode
 	  HAL_Delay(50);
 
 	  last_x = x;

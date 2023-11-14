@@ -73,6 +73,7 @@ void Error_Handler(void);
 #define SWO_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
+#define JERKSQ_THRESHOLD 100000
 
 /* USER CODE END Private defines */
 
